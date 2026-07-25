@@ -1,0 +1,59 @@
+.history-container {
+  max-width: 800px;
+}
+
+.history-header {
+  margin-bottom: 2rem;
+}
+
+.history-content {
+  background: white;
+  border-radius: 12px;
+  padding: 3rem 2rem;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  text-align: center;
+}
+
+.empty-state .icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.empty-state h2 {
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+  color: var(--text-light);
+  margin-bottom: 2rem;
+}
+
+.btn-inline {
+  display: inline-block;
+  width: auto;
+  padding: 0.8rem 2rem;
+  text-decoration: none;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.history-item {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.history-text-preview {
+  margin-bottom: -1rem; /* overlaps nicely with RiskCard */
+  color: var(--text-color);
+  font-style: italic;
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 8px;
+}
