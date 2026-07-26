@@ -31,28 +31,49 @@ const analyzeScam = async (req, res) => {
 });
 
       const prompt = `
-        Analyze the following text for potential scams.
-        Text: "${messageText}"
-        Respond strictly in JSON format with no markdown blocks. 
-        Structure:
-        {
-          "aiCategory": "Name of scam category if any",
-          "aiExplanation": "Brief explanation of why it is or isn't a scam",
-          "aiRiskScore": "Number between 0 and 100",
-          "safetyRecommendations": ["Tip 1", "Tip 2"]
-        }
-      `;
+You are a scam detection assistant.
+
+Analyze this message:
+
+"${messageText}"
+
+Return ONLY valid JSON.
+Do not use markdown.
+Do not write any explanation outside JSON.
+
+{
+  "aiCategory": "",
+  "aiExplanation": "",
+  "aiRiskScore": 0,
+  "safetyRecommendations": []
+}
+`;
 
       const result = await model.generateContent(prompt);
-      const response = await result.response;
+
+const response = result.response;
 const responseText = response.text();
 
 console.log("Gemini Response:", responseText);
-      
-      // Clean up markdown in case the model ignores the prompt rules
-      const cleanJsonStr = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-      
-      const parsedAiData = JSON.parse(cleanJsonStr);
+
+// Clean up markdown
+const cleanJsonStr = responseText
+  .replace(/```json/g, "")
+  .replace(/```/g, "")
+  .trim();
+
+console.log("Clean JSON:", cleanJsonStr);
+
+let parsedAiData;
+
+try {
+  parsedAiData = JSON.parse(cleanJsonStr);
+} catch (e) {
+  console.log("Gemini returned invalid JSON:");
+  console.log(responseText);
+
+  throw new Error("Gemini returned invalid JSON");
+}
 
       aiCategory = parsedAiData.aiCategory;
       aiExplanation = parsedAiData.aiExplanation;
