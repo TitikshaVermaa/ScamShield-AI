@@ -44,7 +44,10 @@ const analyzeScam = async (req, res) => {
       `;
 
       const result = await model.generateContent(prompt);
-      const responseText = result.response.text();
+      const response = await result.response;
+const responseText = response.text();
+
+console.log("Gemini Response:", responseText);
       
       // Clean up markdown in case the model ignores the prompt rules
       const cleanJsonStr = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
@@ -57,10 +60,15 @@ const analyzeScam = async (req, res) => {
       safetyRecommendations = parsedAiData.safetyRecommendations || safetyRecommendations;
       
     } catch (aiError) {
-      console.error('Gemini API Error:', aiError);
-      status = 'Failed';
-      aiExplanation = 'AI Engine failed to analyze the message due to a server error.';
-    }
+  console.error("Gemini API Error:", aiError);
+
+  if (aiError.response) {
+    console.error("Response:", aiError.response);
+  }
+
+  status = "Failed";
+  aiExplanation = aiError.message;
+}
 
     // 3. Combine scores (average of rule engine and AI score)
     // If Gemini failed, we rely 100% on rule engine score
