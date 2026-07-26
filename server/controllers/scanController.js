@@ -26,7 +26,9 @@ const analyzeScam = async (req, res) => {
     // 2. Call Gemini AI for advanced analysis
     try {
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const model = genAI.getGenerativeModel({
+  model: "gemini-2.5-flash",
+});
 
       const prompt = `
         Analyze the following text for potential scams.
