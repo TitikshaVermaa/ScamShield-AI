@@ -27,7 +27,7 @@ const analyzeScam = async (req, res) => {
     try {
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
       const model = genAI.getGenerativeModel({
-  model: "gemini-2.5-flash",
+  model: "gemini-2.0-flash",
 });
 
       const prompt = `
@@ -61,10 +61,8 @@ console.log("Gemini Response:", responseText);
       
     } catch (aiError) {
   console.error("Gemini API Error:", aiError);
-
-  if (aiError.response) {
-    console.error("Response:", aiError.response);
-  }
+  console.error("Error message:", aiError.message);
+  console.error("Full error:", JSON.stringify(aiError, null, 2));
 
   status = "Failed";
   aiExplanation = aiError.message;
