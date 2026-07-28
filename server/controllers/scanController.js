@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI } from '@google/genai';
 import Scan from '../models/Scan.js';
 import { analyzeText } from '../utils/ruleEngine.js';
 
@@ -26,42 +26,9 @@ const analyzeScam = async (req, res) => {
     // 2. Call Gemini AI for advanced analysis
     try {
       const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-});
+        apiKey: process.env.GEMINI_API_KEY,
+      });
 
-const prompt = `
-You are a scam detection assistant.
-
-Analyze the following message:
-
-"${messageText}"
-
-Return ONLY valid JSON in this format:
-
-{
-  "aiCategory": "",
-  "aiExplanation": "",
-  "aiRiskScore": 0,
-  "safetyRecommendations": []
-}
-`;
-
-const response = await ai.models.generateContent({
-  model: "gemini-2.5-flash",
-  contents: prompt,
-});
-
-const responseText = response.text;
-
-console.log("Gemini Response:", responseText);
-
-const parsedAiData = JSON.parse(responseText);
-
-aiCategory = parsedAiData.aiCategory;
-aiExplanation = parsedAiData.aiExplanation;
-aiRiskScore = Number(parsedAiData.aiRiskScore);
-safetyRecommendations =
-  parsedAiData.safetyRecommendations || safetyRecommendations;
       const prompt = `
 You are a scam detection assistant.
 
@@ -81,45 +48,30 @@ Do not write any explanation outside JSON.
 }
 `;
 
-      const result = await model.generateContent(prompt);
+      const result = await ai.models.generateContent({
+        model: 'gemini-2.5-flash-lite',
+        contents: prompt
+      });
 
-const response = result.response;
-const responseText = response.text();
+      const responseText = result.text;
+      
+      // Clean up markdown in case the model ignores the prompt rules
+      const cleanJsonStr = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
+      
+      const parsedAiData = JSON.parse(cleanJsonStr);
 
-console.log("Gemini Response:", responseText);
-
-// Clean up markdown
-const cleanJsonStr = responseText
-  .replace(/```json/g, "")
-  .replace(/```/g, "")
-  .trim();
-
-console.log("Clean JSON:", cleanJsonStr);
-
-let parsedAiData;
-
-try {
-  parsedAiData = JSON.parse(cleanJsonStr);
-} catch (e) {
-  console.log("Gemini returned invalid JSON:");
-  console.log(responseText);
-
-  throw new Error("Gemini returned invalid JSON");
-}
-
-      aiCategory = parsedAiData.aiCategory;
-      aiExplanation = parsedAiData.aiExplanation;
-      aiRiskScore = Number(parsedAiData.aiRiskScore);
-      safetyRecommendations = parsedAiData.safetyRecommendations || safetyRecommendations;
+      aiCategory = parsedAiData.aiCategory || 'Unknown';
+      aiExplanation = parsedAiData.aiExplanation || 'No explanation provided by AI.';
+      aiRiskScore = Number(parsedAiData.aiRiskScore) || 0;
+      safetyRecommendations = (parsedAiData.safetyRecommendations && parsedAiData.safetyRecommendations.length > 0) 
+        ? parsedAiData.safetyRecommendations 
+        : safetyRecommendations;
       
     } catch (aiError) {
-  console.error("Gemini API Error:", aiError);
-  console.error("Error message:", aiError.message);
-  console.error("Full error:", JSON.stringify(aiError, null, 2));
-
-  status = "Failed";
-  aiExplanation = aiError.message;
-}
+      console.error('Gemini API Error:', aiError.message || aiError);
+      status = 'Failed';
+      aiExplanation = 'AI Engine failed to analyze the message due to a server error.';
+    }
 
     // 3. Combine scores (average of rule engine and AI score)
     // If Gemini failed, we rely 100% on rule engine score
