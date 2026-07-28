@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from "@google/genai";
 import Scan from '../models/Scan.js';
 import { analyzeText } from '../utils/ruleEngine.js';
 
@@ -25,10 +25,43 @@ const analyzeScam = async (req, res) => {
 
     // 2. Call Gemini AI for advanced analysis
     try {
-      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({
-  model: "gemini-2.5-flash",
+      const ai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY,
 });
+
+const prompt = `
+You are a scam detection assistant.
+
+Analyze the following message:
+
+"${messageText}"
+
+Return ONLY valid JSON in this format:
+
+{
+  "aiCategory": "",
+  "aiExplanation": "",
+  "aiRiskScore": 0,
+  "safetyRecommendations": []
+}
+`;
+
+const response = await ai.models.generateContent({
+  model: "gemini-2.5-flash",
+  contents: prompt,
+});
+
+const responseText = response.text;
+
+console.log("Gemini Response:", responseText);
+
+const parsedAiData = JSON.parse(responseText);
+
+aiCategory = parsedAiData.aiCategory;
+aiExplanation = parsedAiData.aiExplanation;
+aiRiskScore = Number(parsedAiData.aiRiskScore);
+safetyRecommendations =
+  parsedAiData.safetyRecommendations || safetyRecommendations;
       const prompt = `
 You are a scam detection assistant.
 
