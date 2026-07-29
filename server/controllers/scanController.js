@@ -67,7 +67,7 @@ Do not write any explanation outside JSON.
         ? parsedAiData.safetyRecommendations 
         : safetyRecommendations;
       
-    } } catch (aiError) {
+    }  catch (aiError) {
   console.error("Gemini Full Error:", aiError);
 
   status = "Failed";
