@@ -67,12 +67,13 @@ Do not write any explanation outside JSON.
         ? parsedAiData.safetyRecommendations 
         : safetyRecommendations;
       
-    } catch (aiError) {
-      console.error('Gemini API Error:', aiError.message || aiError);
-      status = 'Failed';
-      aiExplanation = 'AI Engine failed to analyze the message due to a server error.';
-    }
+    } } catch (aiError) {
+  console.error("Gemini Full Error:", aiError);
 
+  status = "Failed";
+  aiExplanation =
+    aiError?.message || JSON.stringify(aiError);
+}
     // 3. Combine scores (average of rule engine and AI score)
     // If Gemini failed, we rely 100% on rule engine score
     const finalRiskScore = status === 'Failed' 
